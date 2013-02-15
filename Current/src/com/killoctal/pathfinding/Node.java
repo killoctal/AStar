@@ -7,14 +7,14 @@ package com.killoctal.pathfinding;
  * , la somme de g+h le noeud parent du noeud courant un index unique, par
  * exemple la position sur une carte
  *
+ * @version 2.0
  * @author Moloch
- * @since 1.0
- * @version 1.0
- * @param <T> l'index du noeud, par exemple une position
+ * @author Gabriel Schlozer
+ * @copyright GNU Lesser General Public License LGPLv3 http://www.gnu.org/licenses/lgpl.html
  */
 public class Node<T> implements Comparable<Node<T>>
 {
-	///
+	/// le cout du trajet entre l'origine et ce noeud
 	final private double mG;
 	
 	///  le cout total du trajet jusqu'a à la destination (cout reel origine-noeud + cout theorique noeud-destination)
@@ -134,18 +134,18 @@ public class Node<T> implements Comparable<Node<T>>
 	
 	@Override
 	public boolean equals(final Object obj)
-    {
-        if (obj instanceof Node<?>)
-        {
-        	final Node<?> other = (Node<?>) obj;
-	        if (other.getDistance() == getDistance() && other.getG() == getG() && (mParent == null || mParent.equals(other.getParent())))
-	        {
-	            return true;
-	        }
-        }
-        
-        return false;
-    }
+	{
+		if (obj instanceof Node<?>)
+		{
+			final Node<?> other = (Node<?>) obj;
+			if (other.getDistance() == getDistance() && other.getG() == getG() && (mParent == null || mParent.equals(other.getParent())))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
 	
 	@Override

@@ -5,11 +5,11 @@ import java.util.Collection;
 
 /**
  * Factory destinée à la construction de nouveau node pour l'algorithme A*
- *
+ * 
+ * @version 2.0
  * @author Moloch
- * @since 1.0
- * @version 1.0
- * @param <T> le type de l'index du noeud (sa position par exemple)
+ * @author Gabriel Schlozer
+ * @copyright GNU Lesser General Public License LGPLv3 http://www.gnu.org/licenses/lgpl.html
  */
 public abstract class NodeFactory<T>
 {
@@ -19,30 +19,30 @@ public abstract class NodeFactory<T>
 	 *
 	 * @param parent le noeud parent
 	 * @param index l'index du noeud à créer
-	 * @param goal la destination
+	 * @param pFinish la destination
 	 * @return le nouveau noeud
 	 */
-	final protected Node<T> instanciateNode(final Node<T> parent, final T index, final T goal)
-    {
-        double g;
-        
-        if (parent == null)
-        {
-            g = computeDifficulty(null, index);
-        }
-        else
-        {
-            g = parent.getG();
-            if (! index.equals( parent.getIndex() ))
-            {
-            	g += computeDifficulty(parent.getIndex(), index);
-            }
-        }
-        
-        double d = computeDistance(index, goal);
-        
-        return initNode(parent, index, g, d);
-    }
+	final protected Node<T> instanciateNode(final Node<T> parent, final T index, final T pFinish)
+	{
+		double g;
+		
+		if (parent == null)
+		{
+			g = computeDifficulty(null, index);
+		}
+		else
+		{
+			g = parent.getG();
+			if (! index.equals( parent.getIndex() ))
+			{
+				g += computeDifficulty(parent.getIndex(), index);
+			}
+		}
+		
+		double d = computeDistance(index, pFinish);
+		
+		return initNode(parent, index, g, d);
+	}
 	
 	
 	/**
