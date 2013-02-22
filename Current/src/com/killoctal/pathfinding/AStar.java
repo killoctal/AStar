@@ -35,7 +35,6 @@ import java.util.PriorityQueue;
  * }
  * @endcode
  * 
- * @version 2.0
  * @author Moloch
  * @author Gabriel Schlozer
  * @copyright GNU Lesser General Public License LGPLv3 http://www.gnu.org/licenses/lgpl.html
@@ -52,10 +51,8 @@ public class AStar<T>
 	
 	
 	/**
-	 * Instancie un nouveau calculateur de chemin par algorithme A*
-	 *
-	 * @param successorComputer Le fournisseur de l'algorithme calculant les successeurs
-	 * @param pNodeFactory le créateur du noeud
+	 * @brief Constructor
+	 * @param pNodeFactory The node factory to use (can be changed later with setNodeFactory() )
 	 */
 	public AStar(NodeFactory<T> pNodeFactory)
 	{
@@ -98,8 +95,7 @@ public class AStar<T>
 	 * @brief Return the closest founded index 
 	 * @return The closest index or null
 	 * @note This cannot be used before the computing
-	 * @note The @code getWays().get(0) @endcode ill be the next way returned returned by nextWay()
-	 * 
+	 * @note The @code getWaysNodes().get(0) @endcode will be the next way returned by nextWay()
 	 */
 	final public ArrayList<Node<T>> getWaysNodes()
 	{
@@ -111,8 +107,8 @@ public class AStar<T>
 	/**
 	 * @brief Get the neighboors of the node
 	 *  
-	 * @param pCurrent le noeud autour duquel on teste les voies
-	 * @param pFinish la destination finale
+	 * @param pCurrent The current node around which one we are checking ways
+	 * @param pFinish The finish point
 	 * 
 	 * @warning The node itself must not be his own neighbor !
 	 */
@@ -195,7 +191,7 @@ public class AStar<T>
 	
 	
 	/**
-	 * @overload Only 1 way will be computed
+	 * @overload Maximum 1 way will be computed
 	 */
 	final public boolean compute(final T pStart, final T pGoal)
 	{
@@ -205,13 +201,12 @@ public class AStar<T>
 	
 	
 	/**
-	 * @brief Calculer les chemins les plus proches
+	 * @brief Compute the nearests ways
 	 * 
-	 * Call once this method after compute() if you have no result
+	 * Call once this method after compute() if it returned false (means you have no result)
 	 * 
-	 * @return TRUE si des chemins existent
-	 * 
-	 * @warning Efface les chemins qui atteignent la cible
+	 * @return TRUE if the way exists
+	 * @warning Clear all previously computed ways 
 	 */
 	final public boolean computeToClosest()
 	{

@@ -2,12 +2,13 @@ package com.killoctal.pathfinding;
 
 
 /**
- * Représente un "noeud" du parcours de l'algotithme A*. Le noeud se caractèrise
- * par : g , sa distance au noeud de départ h , sa distance au noeau d'arrivée f
- * , la somme de g+h le noeud parent du noeud courant un index unique, par
- * exemple la position sur une carte
- *
- * @version 2.0
+ * @brief Represents an A* way node
+ * 
+ * A node is defined by :
+ * - "g" distance from start and this node
+ * - "d" distance from this node to the finish (straight)
+ * - "f" theorical total cost => g+d
+ * 
  * @author Moloch
  * @author Gabriel Schlozer
  * @copyright GNU Lesser General Public License LGPLv3 http://www.gnu.org/licenses/lgpl.html
@@ -21,26 +22,26 @@ public class Node<T> implements Comparable<Node<T>>
 	final private double mF;
 	
 	/// Distance théorique entre ce noeud et la destination
-	final private double mDistance;
+	final private double mD;
 	
 	final private Node<T> mParent;
 	final private T mIndex;
 	
 	/**
-	 * Construit un nouveau noeud
+	 * @brief Constructor
 	 *
 	 * @param pParent le noeud parent de celui-ci (peut etre null)
 	 * @param pIndex l'index du noeud courant
 	 * @param pG le cout du trajet entre l'origine et ce noeud
-	 * @param pDistance cout theorique noeud-destination
+	 * @param pD 
 	 */
-	public Node(final Node<T> pParent, final T pIndex, final double pG, final double pDistance)
+	public Node(final Node<T> pParent, final T pIndex, final double pG, final double pD)
 	{
 		mParent = pParent;
 		mIndex = pIndex;
 		mG = pG;
-		mDistance = pDistance;
-		mF = mG + mDistance;
+		mD = pD;
+		mF = mG + mD;
 	}
 	
 	
@@ -75,7 +76,7 @@ public class Node<T> implements Comparable<Node<T>>
 	
 	public double getDistance()
 	{
-		return mDistance;
+		return mD;
 	}
 	
 	
@@ -151,7 +152,7 @@ public class Node<T> implements Comparable<Node<T>>
 	@Override
 	public int hashCode()
 	{
-		return (int) mDistance + (int) mF + ((mParent != null) ? mParent.hashCode() : 0);
+		return (int) mD + (int) mF + ((mParent != null) ? mParent.hashCode() : 0);
 	}
 }
 

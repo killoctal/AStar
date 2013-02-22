@@ -45,6 +45,7 @@ public abstract class NodeFactory<T>
 	}
 	
 	
+	
 	/**
 	 * Crée un nouveau node avec les paramètres indiqués. C'est la
 	 * résponsabilité de cette méthode de positionner les paramètres
