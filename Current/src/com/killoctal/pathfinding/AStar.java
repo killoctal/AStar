@@ -71,11 +71,6 @@ public class AStar<T>
 	 */
 	public void setNodeFactory(NodeFactory<T> pNodeFactory)
 	{
-		if (pNodeFactory == null)
-		{
-			throw new IllegalArgumentException("NodeFactory can't be null");
-		}
-		
 		mNodeFactory = pNodeFactory;
 	}
 	
@@ -210,18 +205,10 @@ public class AStar<T>
 	 */
 	final public boolean computeToClosest()
 	{
-		// Clear old ways
-		mWays.clear();
-		
-		// If no more ways
-		if (mClosedSet.isEmpty())
+		if (! toto())
 		{
 			return false;
 		}
-		
-		// On remplace les nodes qui attreignent la cible par les nodes calculés
-		mWays.addAll( mClosedSet.values() );
-		mClosedSet.clear();
 		
 		// Sortinf nodes by closest to awayest
 		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
@@ -245,6 +232,54 @@ public class AStar<T>
 	}
 	
 	
+	
+	final public boolean computeToShortest()
+	{
+		if (! toto())
+		{
+			return false;
+		}
+		
+		// Sortinf nodes by closest to awayest
+		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
+			@Override
+			public int compare(Node<T> lhs, Node<T> rhs)
+			{
+				if (lhs.getF() < rhs.getF())
+				{
+					return -1;
+				}
+				else if (lhs.getF() > rhs.getF())
+				{
+					return 1;
+				}
+				
+				return lhs.compareTo(rhs);
+			}
+		});
+		
+		return true;
+	}
+	
+	
+	
+	private boolean toto()
+	{
+		// Clear old ways
+		mWays.clear();
+		
+		// If no more ways
+		if (mClosedSet.isEmpty())
+		{
+			return false;
+		}
+		
+		// On remplace les nodes qui attreignent la cible par les nodes calculés
+		mWays.addAll( mClosedSet.values() );
+		mClosedSet.clear();
+		
+		return true;
+	}
 	
 	/**
 	 * @brief Get the next full way
