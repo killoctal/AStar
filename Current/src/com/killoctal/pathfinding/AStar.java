@@ -47,6 +47,7 @@ public class AStar<T>
 	final private PriorityQueue<Node<T>> mOpenSet;
 	final private HashMap<T, Node<T>> mClosedSet;
 	final private ArrayList<Node<T>> mWays;
+	double mMaxCost;
 	
 	
 	
@@ -61,6 +62,7 @@ public class AStar<T>
 		mOpenSet = new PriorityQueue<Node<T>>();
 		mClosedSet = new HashMap<T, Node<T>>();
 		mWays = new ArrayList<Node<T>>();
+		mMaxCost = Double.MAX_VALUE;
 	}
 	
 	
@@ -112,7 +114,7 @@ public class AStar<T>
 		T tmpCurrentIndex = pCurrent.getIndex();
 		Node<T> tmpLastComputedNode = mClosedSet.get(tmpCurrentIndex);
 		
-		if (tmpLastComputedNode == null || pCurrent.getF() < tmpLastComputedNode.getF())
+		if (tmpLastComputedNode == null || (pCurrent.getF() < tmpLastComputedNode.getF() && pCurrent.getF() < mMaxCost))
 		{
 			mClosedSet.put(tmpCurrentIndex, pCurrent);
 			
@@ -144,7 +146,7 @@ public class AStar<T>
 	 * @return TRUE if way reach the target (returned by nextWay() ),
 	 *		 FALSE otherwise (you can compute the closest way using computeToClosest() )
 	 */
-	final public boolean compute(T pStart, T pFinish, int pMaxWays)
+	final public boolean compute(T pStart, T pFinish, int pMaxWays, double pMaxCost)
 	{
 		// Reset lists
 		mOpenSet.clear();
@@ -190,7 +192,7 @@ public class AStar<T>
 	 */
 	final public boolean compute(final T pStart, final T pGoal)
 	{
-		return compute(pStart, pGoal, 1);
+		return compute(pStart, pGoal, 1, Double.MAX_VALUE);
 	}
 	
 	
