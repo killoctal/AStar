@@ -123,10 +123,10 @@ public class Node<T> implements Comparable<Node<T>>
 		
 		final int result = (int) (getF() - node.getF());
 		
-		if (result == 0)
+		/*TODO if (result == 0)
 		{
 			return -1;
-		}
+		}*/
 		
 		return result;
 	}

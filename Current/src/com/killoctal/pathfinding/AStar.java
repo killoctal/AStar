@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 	
 
 /**
  * @brief A* (AStar) algorithm implementation
+ * 
+ * Find more sources on https://github.com/killoctal and http://killoctal.com
  * 
  * Partially based on http://code.google.com/p/a-star/source/browse/trunk/java/AStar.java?r=8
  * Gabriel's version based on Moloch's version http://finandsys.com/finandsys-blog/index.php?post/2011/09/07/Une-impl%C3%A9mentation-en-Java-de-l-algorithme-A*-(A-star)
@@ -21,22 +25,27 @@ import java.util.PriorityQueue;
  * if (myAstar.compute(fromHere, toHere))
  * {
  *     print("You have all these ways : ");
- *     List<Facet> iWay = myAstar.nextWay();
- *     do
+ *     while ( (List<Facet> iWay = myAstar.nextWay() ) != null )
  *     {
  *         print(iWay);
- *         iWay = myAstar.nextWay();
  *     }
- *     while(iWay != null);
  * }
  * else
  * {
  *     print("There is no ways. Want to come closer ?");
+ *     if (myAstar.toClosest())
+ *     {
+ *         print("You have all these ways : ");
+ *         while ( (List<Facet> iWay = myAstar.nextWay() ) != null )
+ *         {
+ *             print(iWay);
+ *         }
+ *     }
  * }
  * @endcode
  * 
  * @author Moloch
- * @author Gabriel Schlozer
+ * @author Gabriel Schlozer contact@killoctal.com
  * @copyright GNU Lesser General Public License LGPLv3 http://www.gnu.org/licenses/lgpl.html
  */
 public class AStar<T>
@@ -47,7 +56,7 @@ public class AStar<T>
 	final private PriorityQueue<Node<T>> mOpenSet;
 	final private HashMap<T, Node<T>> mClosedSet;
 	final private ArrayList<Node<T>> mWays;
-	double mMaxCost;
+	private double mMaxCost;
 	
 	
 	
@@ -63,6 +72,190 @@ public class AStar<T>
 		mClosedSet = new HashMap<T, Node<T>>();
 		mWays = new ArrayList<Node<T>>();
 		mMaxCost = Double.MAX_VALUE;
+	}
+	
+	
+	
+	/**
+	 * @brief Compute a new way to target
+	 *
+	 * @param pStart Starting point
+	 * @param pFinish Finish point
+	 * @param pFinishSurface The finish surface (set NULL if no surface)
+	 * @param pMaxWays Maximum ways to find (minimum 1)
+	 * @param pMaxCost Max allowed cost of the way 
+	 * 
+	 * @return TRUE if way reach the target (returned by nextWay() ),
+	 *		 FALSE otherwise (you can compute the closest way using computeToClosest() )
+	 */
+	final public boolean compute(T pStart, T pFinish, Set<T> pFinishSurface, int pMaxWays, double pMaxCost)
+	{
+		// Reset lists
+		mOpenSet.clear();
+		mClosedSet.clear();
+		mWays.clear();
+		mMaxCost = pMaxCost;
+		
+		// Minimum 1 way
+		pMaxWays = Math.max(1, pMaxWays);
+		
+		// Basic test
+		if (pFinish.equals(pStart) || (pFinishSurface != null && pFinishSurface.contains(pStart)))
+		{
+			return true;
+		}
+		
+		
+		// First node is the root
+		Node<T> iNode = mNodeFactory.instanciateNode(null, pStart, pFinish);
+		
+		// While opensets exists
+		while ( expand(iNode, pFinish) )
+		{
+			// Takes the current node
+			iNode = mOpenSet.poll();
+			
+			// If the current index is the goal index or is in the surface, the computering is finished
+			if (pFinish.equals( iNode.getIndex() ) || (pFinishSurface != null && pFinishSurface.contains( iNode.getIndex() )))
+			{
+				mWays.add(iNode);
+				
+				// If maximum ways were found exit the main loop
+				if ( --pMaxWays == 0)
+				{
+					break;
+				}
+			}
+		}
+		
+		// On enlève déjà
+		mClosedSet.remove(pFinish);
+		
+		return ! mWays.isEmpty();
+	}
+	
+	
+	
+	/**
+	 * @overload Maximum 1 way will be computed
+	 */
+	final public boolean compute(final T pStart, final T pGoal)
+	{
+		return compute(pStart, pGoal, null, 1, Double.MAX_VALUE);
+	}
+	
+	
+	
+
+	/**
+	 * @brief Get the next full way
+	 * @return A way or empty list if no next way
+	 * 
+	 * @note For more data about the ways you can get the ways by method getWaysNodes()
+	 */
+	final public List<T> nextWay()
+	{
+		// If no more ways
+		if (mWays.isEmpty())
+		{
+			return Collections.<T>emptyList();
+		}
+		
+		ArrayList<T> tmpFinalWay = new ArrayList<T>();
+		// Computes the final way by get back to the parent
+		for(Node<T> i = mWays.remove(0) ; i != null ; i = i.getParent())
+		{
+			tmpFinalWay.add(0, i.getIndex() );
+		}
+		
+		/*// If start index is the same as end index, clear the path
+		if (! tmpFinalWay.isEmpty())
+		{
+			if (tmpFinalWay.get(0).equals(  tmpFinalWay.get(tmpFinalWay.size()-1) ))
+			{
+				tmpFinalWay.clear();
+			}
+		}*/
+		
+		return tmpFinalWay;
+	}
+	
+	
+	
+	/**
+	 * @brief Compute the way that approach with a minimum distance to the target if it is unreachable 
+	 * 
+	 * If compute() returned false, use this method to find the way approaching closest to the target
+	 * 
+	 * @return TRUE if the way exists
+	 * @warning Clear all previously computed ways 
+	 * @see toShortest() Same idea 
+	 */
+	final public boolean toClosest()
+	{
+		if (! prepareToNearest())
+		{
+			return false;
+		}
+		
+		// Sortinf nodes by closest to awayest
+		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
+			@Override
+			public int compare(Node<T> lhs, Node<T> rhs)
+			{
+				if (lhs.getDistance() < rhs.getDistance())
+				{
+					return -1;
+				}
+				else if (lhs.getDistance() > rhs.getDistance())
+				{
+					return 1;
+				}
+				
+				return lhs.compareTo(rhs);
+			}
+		});
+		
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @brief Compute the shortest way approaching the target
+	 * 
+	 * If compute() returned false, use this method to find the way approaching closest to the target
+	 * 
+	 * @return TRUE if the way exists
+	 * @warning Clear all previously computed ways 
+	 * @see toClosest() Same idea
+	 */
+	final public boolean toShortest()
+	{
+		if (! prepareToNearest())
+		{
+			return false;
+		}
+		
+		// Sorting nodes by closest to awayest
+		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
+			@Override
+			public int compare(Node<T> lhs, Node<T> rhs)
+			{
+				if (lhs.getF() < rhs.getF())
+				{
+					return -1;
+				}
+				else if (lhs.getF() > rhs.getF())
+				{
+					return 1;
+				}
+				
+				return lhs.compareTo(rhs);
+			}
+		});
+		
+		return true;
 	}
 	
 	
@@ -114,7 +307,7 @@ public class AStar<T>
 		T tmpCurrentIndex = pCurrent.getIndex();
 		Node<T> tmpLastComputedNode = mClosedSet.get(tmpCurrentIndex);
 		
-		if (tmpLastComputedNode == null || (pCurrent.getF() < tmpLastComputedNode.getF() && pCurrent.getF() < mMaxCost))
+		if (tmpLastComputedNode == null || (pCurrent.getF() < tmpLastComputedNode.getF() && pCurrent.getF() <= mMaxCost))
 		{
 			mClosedSet.put(tmpCurrentIndex, pCurrent);
 			
@@ -136,136 +329,7 @@ public class AStar<T>
 	
 	
 	
-	/**
-	 * @brief Compute a new way to target
-	 *
-	 * @param pStart Starting point
-	 * @param pFinish Finish point
-	 * @param pMaxWays Maximum ways to find
-	 * 
-	 * @return TRUE if way reach the target (returned by nextWay() ),
-	 *		 FALSE otherwise (you can compute the closest way using computeToClosest() )
-	 */
-	final public boolean compute(T pStart, T pFinish, int pMaxWays, double pMaxCost)
-	{
-		// Reset lists
-		mOpenSet.clear();
-		mClosedSet.clear();
-		mWays.clear();
-		
-		// Minimum 1 way
-		pMaxWays = Math.max(1, pMaxWays);
-		
-		
-		// First node is the root
-		Node<T> iNode = mNodeFactory.instanciateNode(null, pStart, pFinish);
-		
-		// While opensets exists
-		while ( expand(iNode, pFinish) )
-		{
-			// Takes the current node
-			iNode = mOpenSet.poll();
-			
-			// If the current index is the goal index, the computering is finished
-			if (iNode.getIndex().equals(pFinish))
-			{
-				mWays.add(iNode);
-				
-				// If maximum ways were found exit the main loop
-				if ( --pMaxWays == 0)
-				{
-					break;
-				}
-			}
-		}
-		
-		// On enlève déjà
-		mClosedSet.remove(pFinish);
-		
-		return ! mWays.isEmpty();
-	}
-	
-	
-	
-	/**
-	 * @overload Maximum 1 way will be computed
-	 */
-	final public boolean compute(final T pStart, final T pGoal)
-	{
-		return compute(pStart, pGoal, 1, Double.MAX_VALUE);
-	}
-	
-	
-	
-	/**
-	 * @brief Compute the nearests ways
-	 * 
-	 * Call once this method after compute() if it returned false (means you have no result)
-	 * 
-	 * @return TRUE if the way exists
-	 * @warning Clear all previously computed ways 
-	 */
-	final public boolean computeToClosest()
-	{
-		if (! toto())
-		{
-			return false;
-		}
-		
-		// Sortinf nodes by closest to awayest
-		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
-			@Override
-			public int compare(Node<T> lhs, Node<T> rhs)
-			{
-				if (lhs.getDistance() < rhs.getDistance())
-				{
-					return -1;
-				}
-				else if (lhs.getDistance() > rhs.getDistance())
-				{
-					return 1;
-				}
-				
-				return lhs.compareTo(rhs);
-			}
-		});
-		
-		return true;
-	}
-	
-	
-	
-	final public boolean computeToShortest()
-	{
-		if (! toto())
-		{
-			return false;
-		}
-		
-		// Sortinf nodes by closest to awayest
-		Collections.<Node<T>>sort(mWays, new Comparator<Node<T>>() {
-			@Override
-			public int compare(Node<T> lhs, Node<T> rhs)
-			{
-				if (lhs.getF() < rhs.getF())
-				{
-					return -1;
-				}
-				else if (lhs.getF() > rhs.getF())
-				{
-					return 1;
-				}
-				
-				return lhs.compareTo(rhs);
-			}
-		});
-		
-		return true;
-	}
-	
-	
-	
-	private boolean toto()
+	private boolean prepareToNearest()
 	{
 		// Clear old ways
 		mWays.clear();
@@ -281,30 +345,6 @@ public class AStar<T>
 		mClosedSet.clear();
 		
 		return true;
-	}
-	
-	/**
-	 * @brief Get the next full way
-	 * @return A way or NULL if no next way
-	 * 
-	 * @note For more data about the ways you can get the ways by method getWaysNodes()
-	 */
-	final public ArrayList<T> nextWay()
-	{
-		// If no more ways
-		if (mWays.isEmpty())
-		{
-			return null;
-		}
-		
-		// Computes the final way by get back to the parent
-		ArrayList<T> tmpFinalWay = new ArrayList<T>();
-		for(Node<T> i = mWays.remove(0) ; i != null ; i = i.getParent())
-		{
-			tmpFinalWay.add(0, i.getIndex() );
-		}
-		
-		return tmpFinalWay;
 	}
 	
 }
