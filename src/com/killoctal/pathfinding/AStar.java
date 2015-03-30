@@ -2,11 +2,9 @@ package com.killoctal.pathfinding;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -174,19 +172,12 @@ public class AStar<T>
 			// Recycles the old node
 			//mNodeFactory.recycle(tmpLastComputedNode);
 			
-			// Using thread-safe synchronize block
-			Collection<T> tmpNeighbors = mNodeFactory.findNeighbors(pCurrent);
-			synchronized(tmpNeighbors)
+			for(T iNeighbor : mNodeFactory.findNeighbors(pCurrent))
 			{
-				Iterator<T> tmpIterator = tmpNeighbors.iterator();
-				while(tmpIterator.hasNext())
+				if (iNeighbor != pCurrent.parentNode())
 				{
-					T iNeighbor = tmpIterator.next();
-					if (iNeighbor != pCurrent.parentNode())
-					{
-						Node<T> newNode = mNodeFactory.prepareNode(pCurrent, iNeighbor, pFinish);
-						mOpenSet.add(newNode);
-					}
+					Node<T> newNode = mNodeFactory.prepareNode(pCurrent, iNeighbor, pFinish);
+					mOpenSet.add(newNode);
 				}
 			}
 		}
