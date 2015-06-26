@@ -2,12 +2,12 @@ package com.killoctal.pathfinding;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Set;
 	
 
 /**
@@ -98,7 +98,7 @@ public class AStar<T>
 	 * @return TRUE if way reach the target (returned by nextWay() ),
 	 *		 FALSE otherwise (you can compute the closest way using computeToClosest() )
 	 */
-	final public boolean compute(T pStart, T pFinish, Set<T> pFinishSurface, int pMaxWays, double pMaxCost)
+	final public boolean compute(T pStart, T pFinish, Collection<T> pFinishSurface, int pMaxWays, double pMaxCost)
 	{
 		//mNodeFactory.recycleAll();
 		
