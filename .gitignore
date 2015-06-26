@@ -1,3 +1,24 @@
-# Folders to ignore
+.metadata
+.gradle
 bin/
-gen/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+
+# Maven
+log/
+target/
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
